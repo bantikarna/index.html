@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utkarsh Internet - Cloud Sync & Dual Flow Register</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #1d4ed8;
+            --success: #15803d;
+            --danger: #b91c1c;
+            --warning: #b45309;
+            --bg: #e2e8f0;
+            --card: #ffffff;
+            --border: #cbd5e1;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--bg); color: #1e293b; padding-bottom: 40px; }
+
+        header {
+            background: #0f172a;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 3px solid #2563eb;
+        }
+        header h1 { font-size: 20px; letter-spacing: 0.5px; }
+        header p { font-size: 11.5px; color: #94a3b8; }
+        .top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+        .sync-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+            background: #334155;
+            color: #f8fafc;
+        }
+        .sync-ok { background: #15803d; color: #fff; }
+        .sync-busy { background: #d97706; color: #fff; }
+        .sync-err { background: #dc2626; color: #fff; }
+
+        .container { max-width: 1520px; margin: 14px auto; padding: 0 12px; }
+
+        .wallets-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .w-box {
+            background: var(--card);
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--accent);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .w-box.cash { border-top-color: #16a34a; }
+        .w-box.pnb { border-top-color: #991b1b; }
+        .w-box.spice { border-top-color: #ea580c; }
+        .w-box.airtel { border-top-color: #dc2626; }
+        .w-box.cc { border-top-color: #7c3aed; }
+        .w-box .w-title { font-size: 11px; font-weight: 700; color: #64748b; display: flex; justify-content: space-between; }
+        .w-box .w-val { font-size: 19px; font-weight: 800; color: #0f172a; margin-top: 3px; }
+        .w-edit { color: #2563eb; cursor: pointer; text-decoration: underline; font-weight: 600; }
+
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .kpi {
+            background: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .kpi span { font-size: 12px; font-weight: 700; color: #475569; }
+        .kpi strong { font-size: 17px; }
+
+        .entry-panel {
+            background: #fff;
+            padding: 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            margin-bottom: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .entry-panel h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            align-items: end;
+        }
+        .fg label { display: block; font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 3px; }
+        .fg input, .fg select {
+            width: 100%;
+            padding: 7px 8px;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            font-size: 12.5px;
+            background: #f8fafc;
+        }
+        .fg input:focus, .fg select:focus { outline: none; border-color: #2563eb; background: #fff; }
+        .in-box { background: #f0fdf4 !important; border-color: #86efac !important; }
+        .out-box { background: #fef2f2 !important; border-color: #fca5a5 !important; }
+        .profit-box { background: #eff6ff !important; border-color: #93c5fd !important; font-weight: 700; color: #15803d; }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-primary { background: #1d4ed8; color: white; }
+        .btn-primary:hover { background: #1e40af; }
+        .btn-cloud { background: #0284c7; color: white; font-size: 11.5px; padding: 6px 10px; }
+        .btn-dark { background: #334155; color: white; font-size: 11.5px; padding: 6px 10px; }
+        .btn-green { background: #15803d; color: white; font-size: 11.5px; padding: 6px 10px; }
+        .btn-sm { padding: 3px 7px; font-size: 11px; border-radius: 3px; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-wa { background: #16a34a; color: white; }
+
+        .sheet-container {
+            background: #fff;
+            border: 1px solid #94a3b8;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .sheet-toolbar {
+            background: #f1f5f9;
+            padding: 10px 12px;
+            border-bottom: 1px solid #cbd5e1;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+        .tab {
+            padding: 6px 12px;
+            border: 1px solid #94a3b8;
+            background: #e2e8f0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 4px;
+            color: #334155;
+        }
+        .tab.active { background: #0f172a; color: white; border-color: #0f172a; }
+        .tab.tab-red.active { background: #b91c1c; border-color: #b91c1c; }
+        .tab.tab-yellow.active { background: #ca8a04; border-color: #ca8a04; color: #fff; }
+
+        .search-box {
+            padding: 6px 10px;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            font-size: 12.5px;
+            min-width: 240px;
+        }
+
+        .table-wrap { overflow-x: auto; max-height: 620px; }
+        table.excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        table.excel-table th {
+            background: #1e293b;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 9px 8px;
+            text-align: left;
+            border: 1px solid #475569;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            white-space: nowrap;
+        }
+        table.excel-table td {
+            padding: 7px 8px;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
+        }
+        
+        tr.row-clear { background-color: #ffffff; }
+        tr.row-clear:nth-child(even) { background-color: #f8fafc; }
+        tr.row-receivable { background-color: #fee2e2 !important; }
+        tr.row-payable { background-color: #fef08a !important; }
+        table.excel-table tr:hover { filter: brightness(0.96); }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10.5px;
+            font-weight: 700;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .b-in { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .b-out { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .b-none { background: #f1f5f9; color: #64748b; }
+        .b-age-warn { background: #dc2626; color: white; }
+        .b-age-ok { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+        .b-clear { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .b-speed-fast { background: #dcfce7; color: #15803d; }
+        .b-speed-slow { background: #fee2e2; color: #b91c1c; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>UTKARSH INTERNET — Cloud Sync & Dual Flow Register</h1>
+        <p>Misri Chowk, Loknathpur, Mansurchak Road, Dalsinghsarai | Prop: Rakesh Kumar (7765838411)</p>
+    </div>
+    <div class="top-actions">
+        <span id="syncStatus" class="sync-badge">Offline Mode</span>
+        <button class="btn btn-cloud" onclick="setupCloudUrl()">⚙️ Google Sheet Link</button>
+        <button class="btn btn-cloud" onclick="pullFromCloud()">🔄 Refresh / Sync</button>
+        <button class="btn btn-green" onclick="exportExcelCSV()">Export (.CSV)</button>
+        <button class="btn btn-dark" onclick="setOpeningBalances()">Set Opening Wallets</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="wallets-strip">
+        <div class="w-box cash">
+            <div class="w-title">CASH GALA <span class="w-edit" onclick="editWallet('Cash')">Edit</span></div>
+            <div class="w-val" id="w-Cash">₹0.00</div>
+        </div>
+        <div class="w-box pnb">
+            <div class="w-title">PNB BANK <span class="w-edit" onclick="editWallet('PNB Bank')">Edit</span></div>
+            <div class="w-val" id="w-PNB Bank">₹0.00</div>
+        </div>
+        <div class="w-box spice">
+            <div class="w-title">SPICE MONEY <span class="w-edit" onclick="editWallet('Spice Money')">Edit</span></div>
+            <div class="w-val" id="w-Spice Money">₹0.00</div>
+        </div>
+        <div class="w-box airtel">
+            <div class="w-title">AIRTEL BANK <span class="w-edit" onclick="editWallet('Airtel Bank')">Edit</span></div>
+            <div class="w-val" id="w-Airtel Bank">₹0.00</div>
+        </div>
+        <div class="w-box cc">
+            <div class="w-title">PNB CREDIT CARD <span class="w-edit" onclick="editWallet('PNB Credit Card')">Edit</span></div>
+            <div class="w-val" id="w-PNB Credit Card">₹0.00</div>
+        </div>
+    </div>
+
+    <div class="kpi-strip">
+        <div class="kpi">
+            <span>Aaj Ka Profit:</span>
+            <strong style="color:#15803d" id="kpi-todayProfit">₹0.00</strong>
+        </div>
+        <div class="kpi">
+            <span>Total Profit:</span>
+            <strong style="color:#15803d" id="kpi-totalProfit">₹0.00</strong>
+        </div>
+        <div class="kpi" style="background:#fef2f2; border-color:#fca5a5;">
+            <span style="color:#991b1b;">Customer Baaki (Lena):</span>
+            <strong style="color:#dc2626" id="kpi-receivable">₹0.00</strong>
+        </div>
+        <div class="kpi" style="background:#fefce8; border-color:#fde047;">
+            <span style="color:#854d0e;">Mera Bakaya (Dena):</span>
+            <strong style="color:#ca8a04" id="kpi-payable">₹0.00</strong>
+        </div>
+    </div>
+
+    <div class="entry-panel">
+        <h3>+ Nayi Entry Likhein (Aaya / Gaya Amount & Auto Cloud Sync)</h3>
+        <form id="txForm">
+            <div class="form-grid">
+                <div class="fg">
+                    <label>Tarikh (Date) *</label>
+                    <input type="date" id="txDate" required>
+                </div>
+                <div class="fg">
+                    <label>Service Category *</label>
+                    <select id="txCategory" onchange="autoFlow()" required>
+                        <option value="Cash">Cash</option>
+                        <option value="Mobile Recharge">Mobile Recharge</option>
+                        <option value="Data Recharge">Data Recharge</option>
+                        <option value="DTH Recharge">DTH Recharge</option>
+                        <option value="Smart Meter Recharge">Smart Meter Recharge</option>
+                        <option value="Money Transfer">Money Transfer</option>
+                        <option value="PNB Credit Card">PNB Credit Card Payment</option>
+                        <option value="Wallet / Bank Transfer">Self Wallet / Bank Transfer</option>
+                        <option value="AEPS Cash Withdrawal">AEPS Cash Withdrawal</option>
+                        <option value="AEPS Cash Deposit">AEPS Cash Deposit</option>
+                        <option value="AEPS Cash Enquiry">AEPS Cash Enquiry</option>
+                        <option value="Aadhar Correction">Aadhar Correction</option>
+                        <option value="Pan">Pan</option>
+                        <option value="Voter Card">Voter Card</option>
+                        <option value="Ration Card">Ration Card</option>
+                        <option value="Registation">Registation</option>
+                        <option value="Online Form Fill-up">Online Form Fill-up</option>
+                        <option value="Data Entry">Data Entry</option>
+                        <option value="Hindi/English Typing">Hindi/English Typing</option>
+                        <option value="Print">Print</option>
+                        <option value="Photo Copy">Photo Copy</option>
+                        <option value="Instant Photo">Instant Photo</option>
+                        <option value="Bike Insurance">Bike Insurance</option>
+                        <option value="Life Certificate">Life Certificate</option>
+                        <option value="Caste/Income/Residence Certificate">Caste/Income/Residence Certificate</option>
+                        <option value="NCL">NCL</option>
+                        <option value="EMI">EMI</option>
+                        <option value="Investment">Investment</option>
+                        <option value="School Fee">School Fee</option>
+                        <option value="Tution Fee">Tution Fee</option>
+                        <option value="Donation">Donation</option>
+                        <option value="Birth/Death Certificate">Birth/Death Certificate</option>
+                        <option value="IRCTC Ticket Booking">IRCTC Ticket Booking</option>
+                        <option value="Shop Expense">Shop Expense</option>
+                        <option value="Self-Expense">Self-Expense</option>
+                        <option value="Adjust">Adjust</option>
+                        <option value="Udhaar / Bakaya Khata">Sirf Udhaar / Bakaya Entry</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label>Customer / Party *</label>
+                    <input type="text" id="partyName" placeholder="Naam" list="customerList" required>
+                    <datalist id="customerList"></datalist>
+                </div>
+                <div class="fg">
+                    <label>Mobile No.</label>
+                    <input type="tel" id="partyMobile" placeholder="10-digit">
+                </div>
+                <div class="fg">
+                    <label>Detail / Note</label>
+                    <input type="text" id="txNote" placeholder="Remark">
+                </div>
+
+                <div class="fg">
+                    <label style="color:#16a34a;">Paisa AAYA (+ IN)</label>
+                    <select id="inAcc" class="in-box" onchange="calcProfit()">
+                        <option value="Cash">Cash Gala</option>
+                        <option value="Spice Money">Spice Money</option>
+                        <option value="PNB Bank">PNB Bank</option>
+                        <option value="Airtel Bank">Airtel Bank</option>
+                        <option value="PNB Credit Card">PNB Credit Card</option>
+                        <option value="None">-- Koi Nahi --</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label style="color:#16a34a;">Aaya Amount (₹) *</label>
+                    <input type="number" id="inAmt" class="in-box" value="0" min="0" step="0.01" oninput="calcProfit()" required>
+                </div>
+
+                <div class="fg">
+                    <label style="color:#dc2626;">Paisa GAYA (- OUT)</label>
+                    <select id="outAcc" class="out-box" onchange="calcProfit()">
+                        <option value="None">-- Koi Nahi --</option>
+                        <option value="Cash">Cash Gala</option>
+                        <option value="Spice Money">Spice Money</option>
+                        <option value="PNB Bank">PNB Bank</option>
+                        <option value="Airtel Bank">Airtel Bank</option>
+                        <option value="PNB Credit Card">PNB Credit Card</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label style="color:#dc2626;">Gaya Amount (₹) *</label>
+                    <input type="number" id="outAmt" class="out-box" value="0" min="0" step="0.01" oninput="calcProfit()" required>
+                </div>
+
+                <div class="fg">
+                    <label style="color:#1d4ed8;">Kamai / Charge (Auto ₹)</label>
+                    <input type="number" id="chargeAmt" class="profit-box" value="0.00" step="0.01">
+                </div>
+
+                <div class="fg">
+                    <label>Baaki Rakam (₹)</label>
+                    <input type="number" id="dueAmt" value="0" min="0" step="0.01" oninput="calcProfit()">
+                </div>
+                <div class="fg">
+                    <label>Baaki Prakar</label>
+                    <select id="dueType" onchange="calcProfit()">
+                        <option value="none">Clear (No Due)</option>
+                        <option value="receivable">Customer Baaki (Lena)</option>
+                        <option value="payable">Mera Bakaya (Dena)</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Save & Sync</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="sheet-container">
+        <div class="sheet-toolbar">
+            <div class="tabs">
+                <button class="tab active" onclick="switchView('all', this)">1. Complete Register</button>
+                <button class="tab tab-red" onclick="switchView('receivable', this)">2. Customer Baaki (Red Rows)</button>
+                <button class="tab tab-yellow" onclick="switchView('payable', this)">3. Mera Bakaya (Yellow Rows)</button>
+                <button class="tab" onclick="switchView('customers', this)">4. Customer Ageing & Speed Report</button>
+            </div>
+            <input type="text" id="searchBox" class="search-box" placeholder="Naam, Mobile ya Service khojein..." onkeyup="renderCurrentView()">
+        </div>
+
+        <div class="table-wrap" id="registerView">
+            <table class="excel-table">
+                <thead>
+                    <tr>
+                        <th>Sr.</th>
+                        <th>Date & Time</th>
+                        <th>Customer / Party</th>
+                        <th>Service & Remark</th>
+                        <th>Paisa Aaya (IN Account)</th>
+                        <th>Aaya Amt (₹)</th>
+                        <th>Paisa Gaya (OUT Account)</th>
+                        <th>Gaya Amt (₹)</th>
+                        <th>Kamai (₹)</th>
+                        <th>Customer Baaki (Lena)</th>
+                        <th>Mera Bakaya (Dena)</th>
+                        <th>Ageing / Clear Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="registerBody"></tbody>
+            </table>
+        </div>
+
+        <div class="table-wrap" id="customerReportView" style="display:none;">
+            <table class="excel-table">
+                <thead>
+                    <tr>
+                        <th>Sr.</th>
+                        <th>Customer / Party Naam</th>
+                        <th>Mobile No.</th>
+                        <th>Total Kaam (₹)</th>
+                        <th>Abhi Baaki (Lena)</th>
+                        <th>Purana Baaki (Din)</th>
+                        <th>Mera Bakaya (Dena)</th>
+                        <th>Cleared Entries</th>
+                        <th>Avg. Clearing Speed</th>
+                        <th>Quick Reminder</th>
+                    </tr>
+                </thead>
+                <tbody id="customerReportBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('txDate').valueAsDate = new Date();
+
+    const defaultWallets = {
+        'Cash': 0,
+        'PNB Bank': 0,
+        'Spice Money': 0,
+        'Airtel Bank': 0,
+        'PNB Credit Card': 0
+    };
+
+    let cloudUrl = localStorage.getItem('utkarsh_cloud_url') || '';
+    let openingWallets = JSON.parse(localStorage.getItem('utkarsh_erp_wallets_v4')) || { ...defaultWallets };
+    let transactions = JSON.parse(localStorage.getItem('utkarsh_erp_tx_v4')) || [];
+    let currentView = 'all';
+
+    // Standard Date Format: DD-MM-YYYY
+    function formatDisplayDate(dateStr) {
+        if (!dateStr) return '-';
+        const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (match) {
+            return `${match[3]}-${match[2]}-${match[1]}`;
+        }
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime()) && d.getFullYear() > 1950) {
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${dd}-${mm}-${yyyy}`;
+        }
+        return String(dateStr).slice(0, 10);
+    }
+
+    // Standard Time Format: HH:MM AM/PM
+    function formatDisplayTime(timeStr) {
+        if (!timeStr) return '';
+        const clean = String(timeStr).trim();
+        if (/^\d{1,2}:\d{2}(\s?(AM|PM))?$/i.test(clean)) {
+            return clean.toUpperCase();
+        }
+        const d = new Date(clean);
+        if (!isNaN(d.getTime())) {
+            return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
+        }
+        return '';
+    }
+
+    function normalizeIsoDate(dateStr) {
+        if (!dateStr) return new Date().toISOString().split('T')[0];
+        const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime()) && d.getFullYear() > 1950) {
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            return `${d.getFullYear()}-${mm}-${dd}`;
+        }
+        return new Date().toISOString().split('T')[0];
+    }
+
+    function updateSyncBadge(status, text) {
+        const el = document.getElementById('syncStatus');
+        el.className = 'sync-badge ' + status;
+        el.innerText = text;
+    }
+
+    function setupCloudUrl() {
+        const url = prompt("Apna Google Apps Script Web App URL paste karein:", cloudUrl);
+        if (url !== null) {
+            cloudUrl = url.trim();
+            localStorage.setItem('utkarsh_cloud_url', cloudUrl);
+            if (cloudUrl) {
+                pullFromCloud();
+            } else {
+                updateSyncBadge('', 'Offline Mode');
+            }
+        }
+    }
+
+    async function pullFromCloud() {
+        if (!cloudUrl) {
+            updateSyncBadge('', 'Offline (No Link)');
+            return;
+        }
+        updateSyncBadge('sync-busy', '⏳ Syncing...');
+        try {
+            const res = await fetch(cloudUrl);
+            const data = await res.json();
+            if (data.status === 'success') {
+                if (data.openingWallets && Object.keys(data.openingWallets).length > 0) {
+                    openingWallets = { ...defaultWallets, ...data.openingWallets };
+                }
+                if (Array.isArray(data.transactions)) {
+                    transactions = data.transactions.map(t => ({
+                        ...t,
+                        date: normalizeIsoDate(t.date),
+                        time: formatDisplayTime(t.time)
+                    }));
+                }
+                localStorage.setItem('utkarsh_erp_wallets_v4', JSON.stringify(openingWallets));
+                localStorage.setItem('utkarsh_erp_tx_v4', JSON.stringify(transactions));
+                updateCalculations();
+                updateCustomerDatalist();
+                renderCurrentView();
+                updateSyncBadge('sync-ok', '☁️ Google Sheet Synced');
+            } else {
+                updateSyncBadge('sync-err', '⚠️ Sync Error');
+            }
+        } catch (err) {
+            console.error(err);
+            updateSyncBadge('sync-err', '⚠️ Offline / Link Error');
+        }
+    }
+
+    async function pushToCloud() {
+        if (!cloudUrl) return;
+        updateSyncBadge('sync-busy', '⏳ Saving to Cloud...');
+        try {
+            await fetch(cloudUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'sync',
+                    openingWallets: openingWallets,
+                    transactions: transactions
+                })
+            });
+            setTimeout(() => {
+                updateSyncBadge('sync-ok', '☁️ Saved to Google Sheet');
+            }, 800);
+        } catch (err) {
+            console.error(err);
+            updateSyncBadge('sync-err', '⚠️ Save Failed (Saved Locally)');
+        }
+    }
+
+    function autoFlow() {
+        const cat = document.getElementById('txCategory').value.trim();
+        const inAcc = document.getElementById('inAcc');
+        const outAcc = document.getElementById('outAcc');
+
+        if (cat === 'AEPS Cash Withdrawal') {
+            inAcc.value = 'Spice Money'; outAcc.value = 'Cash';
+        } else if (cat === 'AEPS Cash Deposit' || cat === 'Money Transfer') {
+            inAcc.value = 'Cash'; outAcc.value = 'Spice Money';
+        } else if (['Mobile Recharge', 'Data Recharge', 'DTH Recharge', 'Smart Meter Recharge'].includes(cat)) {
+            inAcc.value = 'Cash'; outAcc.value = 'Spice Money';
+        } else if (cat === 'PNB Credit Card') {
+            inAcc.value = 'Cash'; outAcc.value = 'PNB Credit Card';
+        } else if (cat === 'Wallet / Bank Transfer') {
+            inAcc.value = 'Spice Money'; outAcc.value = 'PNB Bank';
+        } else if (['Shop Expense', 'Self-Expense', 'EMI', 'Investment', 'School Fee', 'Tution Fee', 'Donation'].includes(cat)) {
+            inAcc.value = 'None'; outAcc.value = 'Cash';
+        } else if (cat === 'Udhaar / Bakaya Khata' || cat === 'AEPS Cash Enquiry') {
+            inAcc.value = 'None'; outAcc.value = 'None';
+        } else {
+            inAcc.value = 'Cash'; outAcc.value = 'None';
+        }
+        calcProfit();
+    }
+    autoFlow();
+
+    function calcProfit() {
+        const inAcc = document.getElementById('inAcc').value;
+        const outAcc = document.getElementById('outAcc').value;
+        const inAmt = parseFloat(document.getElementById('inAmt').value) || 0;
+        const outAmt = parseFloat(document.getElementById('outAmt').value) || 0;
+        const dueAmt = parseFloat(document.getElementById('dueAmt').value) || 0;
+        const dueType = document.getElementById('dueType').value;
+
+        let profit = 0;
+        if (outAcc === 'None' && inAcc !== 'None') {
+            profit = inAmt + (dueType === 'receivable' ? dueAmt : 0);
+        } else if (inAcc !== 'None' && outAcc !== 'None') {
+            profit = (inAmt - outAmt) + (dueType === 'receivable' ? dueAmt : 0) - (dueType === 'payable' ? dueAmt : 0);
+        }
+        document.getElementById('chargeAmt').value = profit.toFixed(2);
+    }
+
+    function getDaysDiff(dateStr1, dateStr2) {
+        const d1 = new Date(normalizeIsoDate(dateStr1));
+        const d2 = dateStr2 ? new Date(normalizeIsoDate(dateStr2)) : new Date();
+        d1.setHours(0,0,0,0);
+        d2.setHours(0,0,0,0);
+        return Math.max(0, Math.floor((d2 - d1) / (1000 * 60 * 60 * 24)));
+    }
+
+    document.getElementById('txForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
+
+        const inAcc = document.getElementById('inAcc').value;
+        const outAcc = document.getElementById('outAcc').value;
+        const inAmt = parseFloat(document.getElementById('inAmt').value) || 0;
+        const outAmt = parseFloat(document.getElementById('outAmt').value) || 0;
+        const charge = parseFloat(document.getElementById('chargeAmt').value) || 0;
+        const due = parseFloat(document.getElementById('dueAmt').value) || 0;
+        let dueType = document.getElementById('dueType').value;
+
+        if (due > 0 && dueType === 'none') dueType = 'receivable';
+
+        const tx = {
+            id: Date.now(),
+            date: normalizeIsoDate(document.getElementById('txDate').value),
+            time: timeStr,
+            category: document.getElementById('txCategory').value.trim(),
+            name: document.getElementById('partyName').value.trim(),
+            mobile: document.getElementById('partyMobile').value.trim(),
+            note: document.getElementById('txNote').value.trim(),
+            inAcc: inAcc,
+            inAmt: inAcc !== 'None' ? inAmt : 0,
+            outAcc: outAcc,
+            outAmt: outAcc !== 'None' ? outAmt : 0,
+            charge: charge,
+            originalDue: due,
+            due: due,
+            dueType: due > 0 ? dueType : 'none',
+            clearedDate: due === 0 ? normalizeIsoDate(document.getElementById('txDate').value) : null,
+            daysTakenToClear: due === 0 ? 0 : null
+        };
+
+        transactions.unshift(tx);
+        saveAndRefresh();
+        this.reset();
+        document.getElementById('txDate').valueAsDate = new Date();
+        autoFlow();
+    });
+
+    function saveAndRefresh() {
+        localStorage.setItem('utkarsh_erp_wallets_v4', JSON.stringify(openingWallets));
+        localStorage.setItem('utkarsh_erp_tx_v4', JSON.stringify(transactions));
+        updateCalculations();
+        updateCustomerDatalist();
+        renderCurrentView();
+        pushToCloud();
+    }
+
+    function updateCustomerDatalist() {
+        const list = document.getElementById('customerList');
+        const uniqueNames = [...new Set(transactions.map(t => t.name))];
+        list.innerHTML = uniqueNames.map(n => `<option value="${n}">`).join('');
+    }
+
+    function updateCalculations() {
+        let wallets = { ...openingWallets };
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        let todayProfit = 0;
+        let totalProfit = 0;
+        let totalReceivable = 0;
+        let totalPayable = 0;
+
+        transactions.forEach(t => {
+            totalProfit += t.charge;
+            if (normalizeIsoDate(t.date) === todayStr) todayProfit += t.charge;
+
+            if (t.dueType === 'receivable') totalReceivable += t.due;
+            if (t.dueType === 'payable') totalPayable += t.due;
+
+            if (t.inAcc && t.inAcc !== 'None' && wallets.hasOwnProperty(t.inAcc)) {
+                wallets[t.inAcc] += (t.inAmt || 0);
+            }
+            if (t.outAcc && t.outAcc !== 'None' && wallets.hasOwnProperty(t.outAcc)) {
+                wallets[t.outAcc] -= (t.outAmt || 0);
+            }
+        });
+
+        Object.keys(wallets).forEach(k => {
+            const el = document.getElementById('w-' + k);
+            if (el) el.innerText = '₹' + wallets[k].toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        });
+
+        document.getElementById('kpi-todayProfit').innerText = '₹' + todayProfit.toFixed(2);
+        document.getElementById('kpi-totalProfit').innerText = '₹' + totalProfit.toFixed(2);
+        document.getElementById('kpi-receivable').innerText = '₹' + totalReceivable.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('kpi-payable').innerText = '₹' + totalPayable.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function switchView(view, btn) {
+        currentView = view;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (view === 'customers') {
+            document.getElementById('registerView').style.display = 'none';
+            document.getElementById('customerReportView').style.display = 'block';
+        } else {
+            document.getElementById('registerView').style.display = 'block';
+            document.getElementById('customerReportView').style.display = 'none';
+        }
+        renderCurrentView();
+    }
+
+    function renderCurrentView() {
+        if (currentView === 'customers') {
+            renderCustomerReport();
+        } else {
+            renderRegisterTable();
+        }
+    }
+
+    function renderRegisterTable() {
+        const tbody = document.getElementById('registerBody');
+        const q = document.getElementById('searchBox').value.toLowerCase();
+        tbody.innerHTML = '';
+
+        const filtered = transactions.filter(t => {
+            const match = t.name.toLowerCase().includes(q) ||
+                          t.mobile.includes(q) ||
+                          t.category.toLowerCase().includes(q) ||
+                          t.note.toLowerCase().includes(q) ||
+                          t.inAcc.toLowerCase().includes(q) ||
+                          t.outAcc.toLowerCase().includes(q);
+            if (!match) return false;
+
+            if (currentView === 'receivable') return t.dueType === 'receivable' && t.due > 0;
+            if (currentView === 'payable') return t.dueType === 'payable' && t.due > 0;
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; padding:20px; color:#64748b;">Koi entry nahi mili.</td></tr>';
+            return;
+        }
+
+        filtered.forEach((t, idx) => {
+            let rowClass = 'row-clear';
+            if (t.due > 0 && t.dueType === 'receivable') rowClass = 'row-receivable';
+            if (t.due > 0 && t.dueType === 'payable') rowClass = 'row-payable';
+
+            let inAccHtml = t.inAcc !== 'None' ? `<span class="badge b-in">+ ${t.inAcc}</span>` : `<span class="badge b-none">-</span>`;
+            let outAccHtml = t.outAcc !== 'None' ? `<span class="badge b-out">- ${t.outAcc}</span>` : `<span class="badge b-none">-</span>`;
+
+            let ageingHtml = '';
+            if (t.due > 0) {
+                const daysPending = getDaysDiff(t.date, null);
+                const badgeClass = daysPending >= 7 ? 'b-age-warn' : 'b-age-ok';
+                const dayLabel = daysPending === 0 ? 'Aaj ka baaki' : `${daysPending} Din se baaki`;
+                ageingHtml = `<span class="badge ${badgeClass}">${dayLabel}</span>`;
+            } else {
+                if (t.originalDue > 0 && t.daysTakenToClear !== null) {
+                    ageingHtml = `<span class="badge b-clear">${t.daysTakenToClear} din mein clear</span>`;
+                } else {
+                    ageingHtml = `<span style="color:#64748b; font-size:11px;">Same Day</span>`;
+                }
+            }
+
+            const custDueCell = (t.due > 0 && t.dueType === 'receivable') ? `<strong style="color:#b91c1c;">₹${t.due.toFixed(2)}</strong>` : '-';
+            const myPayableCell = (t.due > 0 && t.dueType === 'payable') ? `<strong style="color:#92400e;">₹${t.due.toFixed(2)}</strong>` : '-';
+
+            const statusBadge = t.due > 0
+                ? (t.dueType === 'receivable' ? '<span class="badge b-age-warn">LENA BAAKI</span>' : '<span class="badge b-age-ok">DENA HAI</span>')
+                : '<span class="badge b-clear">CLEAR</span>';
+
+            const settleBtn = t.due > 0
+                ? `<button class="btn btn-sm btn-green" onclick="settleEntry(${t.id})">Clear</button>`
+                : '';
+
+            const waBtn = (t.due > 0 && t.dueType === 'receivable' && t.mobile.length >= 10)
+                ? `<button class="btn btn-sm btn-wa" onclick="sendWA('${t.name}', '${t.mobile}', ${t.due}, ${getDaysDiff(t.date, null)})">WA</button>`
+                : '';
+
+            const cleanDate = formatDisplayDate(t.date);
+            const cleanTime = formatDisplayTime(t.time);
+
+            tbody.innerHTML += `
+                <tr class="${rowClass}">
+                    <td><strong>${filtered.length - idx}</strong></td>
+                    <td style="white-space:nowrap;"><strong>${cleanDate}</strong><br><small style="color:#64748b;">${cleanTime}</small></td>
+                    <td><strong>${t.name}</strong><br><small style="color:#475569;">${t.mobile || ''}</small></td>
+                    <td><strong>${t.category}</strong><br><small style="color:#475569;">${t.note}</small></td>
+                    <td>${inAccHtml}</td>
+                    <td style="color:#15803d; font-weight:700;">₹${(t.inAmt || 0).toFixed(2)}</td>
+                    <td>${outAccHtml}</td>
+                    <td style="color:#b91c1c; font-weight:700;">₹${(t.outAmt || 0).toFixed(2)}</td>
+                    <td style="color:#1d4ed8; font-weight:800;">₹${t.charge.toFixed(2)}</td>
+                    <td>${custDueCell}</td>
+                    <td>${myPayableCell}</td>
+                    <td>${ageingHtml}</td>
+                    <td>${statusBadge}</td>
+                    <td style="white-space:nowrap;">
+                        ${settleBtn} ${waBtn}
+                        <button class="btn btn-sm btn-danger" onclick="deleteEntry(${t.id})">X</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderCustomerReport() {
+        const tbody = document.getElementById('customerReportBody');
+        const q = document.getElementById('searchBox').value.toLowerCase();
+        tbody.innerHTML = '';
+
+        const map = {};
+        transactions.forEach(t => {
+            const key = t.name.toLowerCase();
+            if (!map[key]) {
+                map[key] = {
+                    name: t.name,
+                    mobile: t.mobile,
+                    totalBusiness: 0,
+                    activeReceivable: 0,
+                    oldestDueDays: 0,
+                    activePayable: 0,
+                    clearedCreditCount: 0,
+                    totalDaysToClear: 0
+                };
+            }
+            const c = map[key];
+            if (!c.mobile && t.mobile) c.mobile = t.mobile;
+            c.totalBusiness += Math.max(t.inAmt || 0, t.outAmt || 0);
+
+            if (t.due > 0 && t.dueType === 'receivable') {
+                c.activeReceivable += t.due;
+                const d = getDaysDiff(t.date, null);
+                if (d > c.oldestDueDays) c.oldestDueDays = d;
+            }
+            if (t.due > 0 && t.dueType === 'payable') {
+                c.activePayable += t.due;
+            }
+            if (t.originalDue > 0 && t.due === 0 && t.daysTakenToClear !== null) {
+                c.clearedCreditCount += 1;
+                c.totalDaysToClear += t.daysTakenToClear;
+            }
+        });
+
+        const customers = Object.values(map).filter(c =>
+            c.name.toLowerCase().includes(q) || (c.mobile && c.mobile.includes(q))
+        );
+
+        if (customers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:20px;">Koi record nahi mila.</td></tr>';
+            return;
+        }
+
+        customers.sort((a, b) => b.activeReceivable - a.activeReceivable);
+
+        customers.forEach((c, i) => {
+            let rowClass = 'row-clear';
+            if (c.activeReceivable > 0) rowClass = 'row-receivable';
+            else if (c.activePayable > 0) rowClass = 'row-payable';
+
+            let speedBadge = '<span style="color:#64748b;">Udhaar nahi hai</span>';
+            if (c.clearedCreditCount > 0) {
+                const avgDays = (c.totalDaysToClear / c.clearedCreditCount).toFixed(1);
+                const cls = avgDays <= 3 ? 'b-speed-fast' : 'b-speed-slow';
+                speedBadge = `<span class="badge ${cls}">Avg. ${avgDays} Din mein clear karta hai</span>`;
+            } else if (c.activeReceivable > 0) {
+                speedBadge = `<span class="badge b-age-warn">Abhi clear nahi kiya</span>`;
+            }
+
+            const oldestBadge = c.activeReceivable > 0
+                ? `<span class="badge ${c.oldestDueDays >= 7 ? 'b-age-warn' : 'b-age-ok'}">${c.oldestDueDays} Din se baaki</span>`
+                : '-';
+
+            const waBtn = (c.activeReceivable > 0 && c.mobile && c.mobile.length >= 10)
+                ? `<button class="btn btn-sm btn-wa" onclick="sendWA('${c.name}', '${c.mobile}', ${c.activeReceivable}, ${c.oldestDueDays})">WhatsApp</button>`
+                : '-';
+
+            tbody.innerHTML += `
+                <tr class="${rowClass}">
+                    <td><strong>${i + 1}</strong></td>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.mobile || '-'}</td>
+                    <td>₹${c.totalBusiness.toFixed(2)}</td>
+                    <td><strong style="color:#b91c1c;">₹${c.activeReceivable.toFixed(2)}</strong></td>
+                    <td>${oldestBadge}</td>
+                    <td><strong style="color:#92400e;">₹${c.activePayable.toFixed(2)}</strong></td>
+                    <td>${c.clearedCreditCount} Baar</td>
+                    <td>${speedBadge}</td>
+                    <td>${waBtn}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function settleEntry(id) {
+        const tx = transactions.find(t => t.id === id);
+        if (!tx) return;
+
+        const amtStr = prompt(`${tx.name} ka baaki ₹${tx.due.toFixed(2)} hai. Kitna jama/clear hua?`, tx.due);
+        if (amtStr === null) return;
+
+        const amt = parseFloat(amtStr);
+        if (isNaN(amt) || amt <= 0 || amt > tx.due) {
+            alert("Sahi rakam dalein!");
+            return;
+        }
+
+        const wallet = prompt("Paisa kis account mein aaya/gaya? (Cash / PNB Bank / Spice Money / Airtel Bank)", "Cash");
+        if (wallet && openingWallets.hasOwnProperty(wallet)) {
+            if (tx.dueType === 'receivable') {
+                openingWallets[wallet] += amt;
+            } else if (tx.dueType === 'payable') {
+                openingWallets[wallet] -= amt;
+            }
+        }
+
+        tx.due -= amt;
+        if (tx.due === 0) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            tx.clearedDate = todayStr;
+            tx.daysTakenToClear = getDaysDiff(tx.date, todayStr);
+            tx.dueType = 'none';
+        }
+        saveAndRefresh();
+    }
+
+    function sendWA(name, mobile, due, days) {
+        const num = mobile.replace(/\D/g, '').slice(-10);
+        const msg = `Namaste ${name} ji, Utkarsh Internet (Loknathpur, Dalsinghsarai) par aapka ₹${due.toFixed(2)} pichhle ${days} din se baaki hai. Kripya aaj jama kar dein. Dhanyawad!`;
+        window.open(`https://wa.me/91${num}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function editWallet(wName) {
+        const curr = openingWallets[wName] || 0;
+        const val = prompt(`${wName} ka sahi balance dalein (₹):`, curr);
+        if (val !== null && !isNaN(parseFloat(val))) {
+            openingWallets[wName] += (parseFloat(val) - curr);
+            saveAndRefresh();
+        }
+    }
+
+    function setOpeningBalances() {
+        Object.keys(openingWallets).forEach(w => {
+            const val = prompt(`${w} ka Opening Balance dalein (₹):`, openingWallets[w]);
+            if (val !== null && !isNaN(parseFloat(val))) {
+                openingWallets[w] = parseFloat(val);
+            }
+        });
+        saveAndRefresh();
+    }
+
+    function deleteEntry(id) {
+        if (confirm("Is entry ko delete karein?")) {
+            transactions = transactions.filter(t => t.id !== id);
+            saveAndRefresh();
+        }
+    }
+
+    function exportExcelCSV() {
+        if (transactions.length === 0) return alert("Koi data nahi hai.");
+        let csv = "Sr No,Date,Time,Customer Name,Mobile,Category,Note,Paisa Aaya (IN Account),Aaya Amount,Paisa Gaya (OUT Account),Gaya Amount,Kamai/Profit,Customer Baaki,Mera Bakaya,Ageing / Clear Days,Status\n";
+        transactions.forEach((t, i) => {
+            const custDue = (t.due > 0 && t.dueType === 'receivable') ? t.due.toFixed(2) : '0.00';
+            const myPay = (t.due > 0 && t.dueType === 'payable') ? t.due.toFixed(2) : '0.00';
+            const daysInfo = t.due > 0 ? `${getDaysDiff(t.date, null)} Days Pending` : `${t.daysTakenToClear || 0} Days to Clear`;
+            const status = t.due > 0 ? (t.dueType === 'receivable' ? 'LENA BAAKI' : 'DENA HAI') : 'CLEAR';
+
+            csv += `${transactions.length - i},"${formatDisplayDate(t.date)}","${formatDisplayTime(t.time)}","${t.name}","${t.mobile}","${t.category}","${t.note}","${t.inAcc}",${(t.inAmt || 0).toFixed(2)},"${t.outAcc}",${(t.outAmt || 0).toFixed(2)},${t.charge.toFixed(2)},${custDue},${myPay},"${daysInfo}","${status}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Utkarsh_Internet_Register_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    }
+
+    updateCalculations();
+    updateCustomerDatalist();
+    renderCurrentView();
+    if (cloudUrl) {
+        pullFromCloud();
+    }
+</script>
+
+</body>
+</html>
